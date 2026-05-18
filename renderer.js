@@ -146,6 +146,250 @@ window.addEventListener("DOMContentLoaded", () => {
 // Ingredient Calculation
 // ========================================
 
+// async function processCalculation() {
+//   // =====================================
+//   // FILE INPUTS
+//   // =====================================
+
+//   const file1 = document.getElementById("calcSource").files[0];
+
+//   const file2 = document.getElementById("calcTarget").files[0];
+
+//   const file3 = document.getElementById("finalFile").files[0];
+
+//   // validation
+//   if (!file1 || !file2 || !file3) {
+//     alert("Please select all 3 files");
+
+//     return;
+//   }
+
+//   // =====================================
+//   // READ FILES
+//   // =====================================
+
+//   const data1 = await file1.arrayBuffer();
+
+//   const data2 = await file2.arrayBuffer();
+
+//   const data3 = await file3.arrayBuffer();
+
+//   const wb1 = XLSX.read(data1, {
+//     type: "array",
+//   });
+
+//   const wb2 = XLSX.read(data2, {
+//     type: "array",
+//   });
+
+//   const wb3 = XLSX.read(data3, {
+//     type: "array",
+//   });
+
+//   // =====================================
+//   // SHEETS
+//   // =====================================
+
+//   const sheet1 = wb1.Sheets[wb1.SheetNames[0]];
+
+//   const sheet2 = wb2.Sheets[wb2.SheetNames[0]];
+
+//   const sheet3 = wb3.Sheets[wb3.SheetNames[0]];
+
+//   // =====================================
+//   // JSON
+//   // =====================================
+
+//   const json1 = XLSX.utils.sheet_to_json(sheet1, { header: 1 });
+
+//   const json2 = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+
+//   let json3 = XLSX.utils.sheet_to_json(sheet3, { header: 1 });
+
+//   // =====================================
+//   // COPY DATA
+//   // =====================================
+
+//   const ingredientsRows = [];
+//   const byProductRows = [];
+//   const productRows = [];
+
+//   // =====================================
+//   // FILE 1
+//   // INGREADIENTS + BY PRODUCT
+//   // =====================================
+
+//   for (let row of json1) {
+//     const dCell = row[3];
+
+//     if (typeof dCell === "string") {
+//       if (dCell.includes("INGREADIENTS")) {
+//         ingredientsRows.push([...row]);
+//       } else if (dCell.includes("BY PRODUCT")) {
+//         byProductRows.push([...row]);
+//       }
+//     }
+//   }
+
+//   // =====================================
+//   // FILE 2
+//   // PRODUCT
+//   // =====================================
+
+//   for (let row of json2) {
+//     const dCell = row[3];
+
+//     if (typeof dCell === "string" && dCell.includes("PRODUCT")) {
+//       productRows.push([...row]);
+//     }
+//   }
+
+//   // =====================================
+//   // MERGE ALL ROWS
+//   // =====================================
+
+//   const finalRows = [...ingredientsRows, ...byProductRows, ...productRows];
+
+//   // =====================================
+//   // REMOVE EMPTY ROWS
+//   // =====================================
+
+//   json3 = json3.filter((row) => {
+//     return row.some((cell) => {
+//       return cell !== undefined && cell !== "";
+//     });
+//   });
+
+//   // =====================================
+//   // INSERT FROM ROW 2
+//   // =====================================
+
+//   // header row রেখে
+//   const headerRow = json3[0];
+
+//   // data
+//   const remainingRows = json3.slice(1);
+
+//   // new final data
+//   json3 = [headerRow, ...finalRows, ...remainingRows];
+
+//   // =====================================
+//   // E COLUMN SERIAL
+//   // =====================================
+
+//   let serial = 1;
+
+//   // Row 2 থেকে loop
+//   for (let i = 1; i < json3.length; i++) {
+//     // D column
+//     const dCell = json3[i][3];
+
+//     // যদি INGREADIENTS হয়
+//     if (typeof dCell === "string" && dCell.includes("INGREADIENTS")) {
+//       // E column = index 4
+//       json3[i][4] = serial;
+
+//       // next serial
+//       serial++;
+//     }
+//   }
+
+//   // =====================================
+//   // H COLUMN FIXED DECIMAL
+//   // =====================================
+
+//   for (let i = 0; i < json3.length; i++) {
+//     const hCell = json3[i][7];
+
+//     if (hCell !== undefined && !isNaN(hCell)) {
+//       json3[i][7] = Number(hCell).toFixed(5);
+//     }
+//   }
+
+//   // =====================================
+//   // J COLUMN FIXED DECIMAL
+//   // =====================================
+
+//   for (let i = 0; i < json3.length; i++) {
+//     const jCell = json3[i][9];
+
+//     if (jCell !== undefined && !isNaN(jCell)) {
+//       json3[i][9] = Number(jCell).toFixed(5);
+//     }
+//   }
+
+//   // =====================================
+//   // CREATE NEW SHEET
+//   // =====================================
+
+//   const newSheet = XLSX.utils.aoa_to_sheet(json3);
+
+//   wb3.Sheets[wb3.SheetNames[0]] = newSheet;
+
+//   // =====================================
+//   // FILE NAME FROM B COLUMN
+//   // =====================================
+
+//   let outputName = "output.csv";
+
+//   for (let row of json3) {
+//     const bCell = row[1];
+
+//     if (typeof bCell === "string" && bCell.startsWith("STR-")) {
+//       outputName = `${bCell}.csv`;
+
+//       break;
+//     }
+//   }
+
+//   // =====================================
+//   // SAVE DIALOG
+//   // =====================================
+
+//   const { dialog } = require("@electron/remote");
+
+//   const savePath = await dialog.showSaveDialog({
+//     defaultPath: outputName,
+
+//     filters: [
+//       {
+//         name: "CSV File",
+//         extensions: ["csv"],
+//       },
+//     ],
+//   });
+
+//   // cancel
+//   if (savePath.canceled) {
+//     document.getElementById("status1").innerText = "Save cancelled";
+
+//     return;
+//   }
+
+//   // =====================================
+//   // SAVE FILE
+//   // =====================================
+
+//   XLSX.writeFile(wb3, savePath.filePath, {
+//     bookType: "csv",
+//   });
+
+//   // =====================================
+//   // SUCCESS
+//   // =====================================
+
+//   document.getElementById("status1").innerText = "Calculation Complete!";
+
+//   // =====================================
+//   // RESET INPUTS
+//   // =====================================
+
+//   document.getElementById("calcSource").value = "";
+
+//   document.getElementById("calcTarget").value = "";
+
+//   document.getElementById("finalFile").value = "";
+// }
 async function processCalculation() {
   // =====================================
   // FILE INPUTS
@@ -160,7 +404,6 @@ async function processCalculation() {
   // validation
   if (!file1 || !file2 || !file3) {
     alert("Please select all 3 files");
-
     return;
   }
 
@@ -200,18 +443,26 @@ async function processCalculation() {
   // JSON
   // =====================================
 
-  const json1 = XLSX.utils.sheet_to_json(sheet1, { header: 1 });
+  const json1 = XLSX.utils.sheet_to_json(sheet1, {
+    header: 1,
+  });
 
-  const json2 = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+  const json2 = XLSX.utils.sheet_to_json(sheet2, {
+    header: 1,
+  });
 
-  let json3 = XLSX.utils.sheet_to_json(sheet3, { header: 1 });
+  let json3 = XLSX.utils.sheet_to_json(sheet3, {
+    header: 1,
+  });
 
   // =====================================
-  // COPY DATA
+  // STORE ROWS
   // =====================================
 
   const ingredientsRows = [];
+
   const byProductRows = [];
+
   const productRows = [];
 
   // =====================================
@@ -223,9 +474,13 @@ async function processCalculation() {
     const dCell = row[3];
 
     if (typeof dCell === "string") {
+      // INGREADIENTS
       if (dCell.includes("INGREADIENTS")) {
         ingredientsRows.push([...row]);
-      } else if (dCell.includes("BY PRODUCT")) {
+      }
+
+      // BY PRODUCT
+      else if (dCell.includes("BY PRODUCT")) {
         byProductRows.push([...row]);
       }
     }
@@ -239,13 +494,13 @@ async function processCalculation() {
   for (let row of json2) {
     const dCell = row[3];
 
-    if (typeof dCell === "string" && dCell.includes("PRODUCT")) {
+    if (typeof dCell === "string" && dCell.trim() === "PRODUCT") {
       productRows.push([...row]);
     }
   }
 
   // =====================================
-  // MERGE ALL ROWS
+  // FINAL MERGE
   // =====================================
 
   const finalRows = [...ingredientsRows, ...byProductRows, ...productRows];
@@ -264,32 +519,26 @@ async function processCalculation() {
   // INSERT FROM ROW 2
   // =====================================
 
-  // header row রেখে
   const headerRow = json3[0];
 
-  // data
   const remainingRows = json3.slice(1);
 
-  // new final data
   json3 = [headerRow, ...finalRows, ...remainingRows];
 
   // =====================================
   // E COLUMN SERIAL
+  // ONLY FOR INGREADIENTS
   // =====================================
 
   let serial = 1;
 
-  // Row 2 থেকে loop
   for (let i = 1; i < json3.length; i++) {
-    // D column
     const dCell = json3[i][3];
 
-    // যদি INGREADIENTS হয়
     if (typeof dCell === "string" && dCell.includes("INGREADIENTS")) {
-      // E column = index 4
+      // E column
       json3[i][4] = serial;
 
-      // next serial
       serial++;
     }
   }
@@ -298,7 +547,7 @@ async function processCalculation() {
   // H COLUMN FIXED DECIMAL
   // =====================================
 
-  for (let i = 0; i < json3.length; i++) {
+  for (let i = 1; i < json3.length; i++) {
     const hCell = json3[i][7];
 
     if (hCell !== undefined && !isNaN(hCell)) {
@@ -307,15 +556,80 @@ async function processCalculation() {
   }
 
   // =====================================
-  // CREATE NEW SHEET
+  // CALCULATION
+  // =====================================
+
+  let ingredientsTotal = 0;
+
+  let byProductTotal = 0;
+
+  let productTotal = 0;
+
+  // =====================================
+  // TOTAL CALCULATE
+  // =====================================
+
+  for (let i = 1; i < json3.length; i++) {
+    const dCell = json3[i][3];
+
+    const hCell = json3[i][7];
+
+    const value = Number(hCell) || 0;
+
+    // INGREADIENTS
+    if (typeof dCell === "string" && dCell.includes("INGREADIENTS")) {
+      ingredientsTotal += value;
+    }
+
+    // BY PRODUCT
+    else if (typeof dCell === "string" && dCell.includes("BY PRODUCT")) {
+      byProductTotal += value;
+    }
+
+    // PRODUCT
+    else if (typeof dCell === "string" && dCell.trim() === "PRODUCT") {
+      productTotal += value;
+    }
+  }
+
+  // =====================================
+  // FINAL RESULT
+  // =====================================
+
+  const finalResult = ingredientsTotal - (byProductTotal + productTotal);
+
+  // =====================================
+  // FIND xMELTING & END CUT
+  // =====================================
+
+  for (let i = 1; i < json3.length; i++) {
+    // AI column = 34
+    const aiCell = json3[i][34];
+
+    if (typeof aiCell === "string" && aiCell.includes("xMELTING & END CUT")) {
+      // H column
+      json3[i][7] = Number(finalResult).toFixed(5);
+
+      break;
+    }
+  }
+
+  // =====================================
+  // CREATE SHEET
   // =====================================
 
   const newSheet = XLSX.utils.aoa_to_sheet(json3);
 
+   
+
+  // =====================================
+  // SAVE SHEET
+  // =====================================
+
   wb3.Sheets[wb3.SheetNames[0]] = newSheet;
 
   // =====================================
-  // FILE NAME FROM B COLUMN
+  // FILE NAME
   // =====================================
 
   let outputName = "output.csv";
@@ -349,7 +663,7 @@ async function processCalculation() {
 
   // cancel
   if (savePath.canceled) {
-    document.getElementById("status1").innerText = "❌ Save cancelled";
+    document.getElementById("status1").innerText = "Save cancelled";
 
     return;
   }
@@ -378,7 +692,6 @@ async function processCalculation() {
 
   document.getElementById("finalFile").value = "";
 }
-
 // ========================================
 // PIN SYSTEM
 // ========================================
