@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Excel Automation Tool</title>
+
+    <!-- CSS file connect -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+
+    <!-- =========================
+     PIN SCREEN
+      ========================= -->
+
+    <div id="pinScreen" class="pin-screen">
+      <div class="pin-box">
+        <h2>Enter PIN</h2>
+
+        <input type="password" id="pinInput" placeholder="Enter PIN" />
+
+        <button onclick="checkPin()">UNLOCK</button>
+
+        <p id="pinError"></p>
+      </div>
+    </div>
+    <div class="container" id="mainApp">
+      <h1>Excel Automation Tool</h1>
+
+      <!-- MODULE 1 -->
+
+      <div class="main">
+        <div class="module_1">
+          <h2>STR / AE Replace</h2>
+
+          <!-- Target File Upload -->
+          <p>Target Excel:</p>
+
+          <input type="file" id="targetFile" />
+
+          <!-- STR Input -->
+          <p>STR Replace:</p>
+
+          <input type="text" id="strInput" placeholder="STR-1351" />
+
+          <!-- AE Input -->
+          <p>AE Replace:</p>
+
+          <input type="text" id="aeInput" placeholder="somethingxmorshed" />
+
+          <!-- Process Button -->
+          <button onclick="processReplace()">PROCESS REPLACE</button>
+
+          <br /><br />
+
+          <!-- Progress Bar -->
+          <div class="progress-container" id="progressContainer">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+
+          <!-- Status -->
+          <p id="status"></p>
+        </div>
+
+        <!-- MODULE 2 -->
+
+        <div class="module_2">
+          <h2>Ingredient Calculation</h2>
+
+          <!-- Calculation Source -->
+          <p>Calculation Source File:</p>
+          <input type="file" id="calcSource" />
+
+          <br /><br />
+
+          <!-- Calculation Target -->
+          <p>Calculation Target File:</p>
+          <input type="file" id="calcTarget" />
+
+          <br /><br />
+
+          <!-- Process Calculation -->
+          <button onclick="processCalculation()">PROCESS CALCULATION</button>
+
+          <br /><br />
+
+          <!-- Status show -->
+          <p id="status1"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS file connect -->
+    <script src="renderer.js"></script>
+  </body>
+</html>

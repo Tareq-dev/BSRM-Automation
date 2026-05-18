@@ -1,0 +1,241 @@
+/* =========================
+   GLOBAL STYLE
+========================= */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #1e1f26;
+  font-family: "Segoe UI", sans-serif;
+  color: #e5e5e5;
+}
+
+/* =========================
+   APP WINDOW
+========================= */
+
+.container {
+  width: 700px;
+  margin: 40px auto;
+  background: #2a2c36;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* =========================
+   TITLE
+========================= */
+
+h1 {
+  text-align: center;
+  color: #00d4ff;
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-top: 10px;
+  color: #ffffff;
+  border-left: 4px solid #00d4ff;
+  padding-left: 10px;
+}
+
+/* =========================
+   LABEL TEXT
+========================= */
+
+p {
+  margin: 10px 0 5px;
+  color: #cfcfcf;
+}
+
+/* =========================
+   INPUT FIELDS (MODERN)
+========================= */
+
+input[type="file"],
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #1f212b;
+  color: #fff;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+  transition: 0.3s;
+}
+
+input[type="file"]:hover,
+input[type="text"]:hover {
+  background: #2f3240;
+}
+
+/* focus glow */
+input:focus {
+  box-shadow: 0 0 8px #00d4ff;
+}
+
+/* =========================
+   BUTTON STYLE (SOFTWARE LOOK)
+========================= */
+
+button {
+   
+  padding: 14px;
+  background: linear-gradient(90deg, #00d4ff, #007bff);
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+}
+
+ 
+ 
+/* =========================
+   PROGRESS BAR
+========================= */
+
+.progress-container {
+  width: 100%;
+  height: 18px;
+  background: #1f212b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00ff99, #00d4ff);
+  transition: 0.4s;
+}
+
+/* =========================
+   STATUS TEXT
+========================= */
+
+#status,
+#status1 {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #00ffcc;
+}
+  
+
+.main{
+     display: flex;              
+     justify-content: center;
+     gap: 100px;
+     padding-left: 30px;
+     padding-right: 30px;
+}
+.module_1{
+     width: 50%;
+     
+}
+.module_2{
+     width: 50%;
+}
+#progressContainer {
+  display: none;
+}
+
+
+/* =========================
+   PIN SCREEN
+========================= */
+
+.pin-screen {
+
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: #1b1d24;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+
+
+/* PIN BOX */
+
+.pin-box {
+
+  width: 350px;
+
+  background: #2a2c36;
+
+  padding: 30px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+  text-align: center;
+}
+
+
+
+/* PIN INPUT */
+
+.pin-box input {
+
+  width: 100%;
+
+  padding: 14px;
+
+  margin-top: 20px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #1f212b;
+
+  color: white;
+
+  outline: none;
+}
+
+
+
+/* ERROR MESSAGE */
+
+#pinError {
+
+  margin-top: 10px;
+
+  color: #ff5e5e;
+
+  font-weight: bold;
+}
+
+
+
+/* MAIN APP HIDDEN */
+
+#mainApp {
+
+  display: none;
+}
