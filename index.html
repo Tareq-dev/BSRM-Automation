@@ -8,10 +8,9 @@
   </head>
 
   <body>
-
     <!-- =========================
-     PIN SCREEN
-      ========================= -->
+      PIN SCREEN
+        ========================= -->
 
     <div id="pinScreen" class="pin-screen">
       <div class="pin-box">
@@ -68,21 +67,18 @@
           <h2>Ingredient Calculation</h2>
 
           <!-- Calculation Source -->
-          <p>Calculation Source File:</p>
+          <p>Main Pulpit:</p>
           <input type="file" id="calcSource" />
 
-          <br /><br />
+          <p>Final Pulpit:</p>
 
+          <input type="file" id="finalFile" />
           <!-- Calculation Target -->
-          <p>Calculation Target File:</p>
+          <p>STR File:</p>
           <input type="file" id="calcTarget" />
-
-          <br /><br />
 
           <!-- Process Calculation -->
           <button onclick="processCalculation()">PROCESS CALCULATION</button>
-
-          <br /><br />
 
           <!-- Status show -->
           <p id="status1"></p>

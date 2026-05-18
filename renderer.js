@@ -7,91 +7,70 @@ const XLSX = require("xlsx");
 // ========================================
 
 async function processReplace() {
-  // Progress function
   function updateProgress(value) {
     document.getElementById("progressBar").style.width = `${value}%`;
   }
-  // show progress bar
+
   document.getElementById("progressContainer").style.display = "block";
-  // Start progress
   updateProgress(10);
 
-  // File নিচ্ছে
   const targetFile = document.getElementById("targetFile").files[0];
 
-  // File check
   if (!targetFile) {
     alert("Please select a file");
-
     return;
   }
 
-  // STR input
-  const strValue = document.getElementById("strInput").value.trim();
+  const strInput = document.getElementById("strInput");
+  const aeInput = document.getElementById("aeInput");
 
-  // AE input
-  const aeValue = document.getElementById("aeInput").value.trim();
+  const strValue = strInput.value.trim();
+  const aeValue = aeInput.value.trim();
 
-  // Validation
   if (!strValue || !aeValue) {
     alert("Please fill all inputs");
-
     return;
   }
 
-  // Progress
+  // ==========================
+  // STR +1 LOGIC
+  // ==========================
+  const match = strValue.match(/(\d+)$/);
+
+  let nextStrValue = strValue;
+
   updateProgress(20);
 
-  // FileReader
   const reader = new FileReader();
 
-  // File load
   reader.onload = async function (e) {
-    // File data
     const data = e.target.result;
 
-    // Workbook
     const workbook = XLSX.read(data, {
       type: "array",
     });
 
-    // Progress
     updateProgress(40);
 
-    // Sheet
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // Sheet → JSON
-    const jsonData = XLSX.utils.sheet_to_json(
-      sheet,
+    const jsonData = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+    });
 
-      {
-        header: 1,
-      },
-    );
-
-    // Loop rows
     for (let i = 0; i < jsonData.length; i++) {
       const row = jsonData[i];
 
-      // ==========================
       // B COLUMN
-      // ==========================
-
       const bCell = row[1];
-
       if (typeof bCell === "string") {
         if (bCell.startsWith("STR-")) {
           row[1] = strValue;
         }
       }
 
-      // ==========================
       // AE COLUMN
-      // ==========================
-
       const aeCell = row[30];
-
       if (typeof aeCell === "string") {
         if (aeCell.includes("x")) {
           row[30] = aeValue;
@@ -99,79 +78,46 @@ async function processReplace() {
       }
     }
 
-    // Progress
     updateProgress(60);
 
-    // Progress
-    updateProgress(80);
-
-    // =================================
-    // NEW SHEET
-    // =================================
-
     const newSheet = XLSX.utils.aoa_to_sheet(jsonData);
-
     workbook.Sheets[workbook.SheetNames[0]] = newSheet;
-
-    // =================================
-    // SAVE LOCATION
-    // =================================
 
     const { dialog } = require("@electron/remote");
 
     const savePath = await dialog.showSaveDialog({
-      defaultPath: `${strValue}.csv`,
-
+      defaultPath: `${nextStrValue}.csv`,
       filters: [
         {
           name: "CSV File",
-
           extensions: ["csv"],
         },
       ],
     });
 
-    // যদি cancel করে
     if (savePath.canceled) {
-      document.getElementById("status").innerHTML = "❌ Save cancelled";
-
+      document.getElementById("status").innerHTML = "Save cancelled";
       return;
     }
 
-    // =================================
-    // SAVE FILE
-    // =================================
+    XLSX.writeFile(workbook, savePath.filePath, {
+      bookType: "csv",
+    });
 
-    XLSX.writeFile(
-      workbook,
-
-      savePath.filePath,
-
-      {
-        bookType: "csv",
-      },
-    );
-
-    // Progress
     updateProgress(100);
-    // hide progress bar after completion
+
     setTimeout(() => {
       document.getElementById("progressContainer").style.display = "none";
       updateProgress(0);
     }, 1000);
-    // =================================
-    // SUCCESS MESSAGE
-    // =================================
 
-    document.getElementById("status").innerHTML = `File Saved Successfully!`;
+    document.getElementById("status").innerHTML = "File Saved Successfully!";
 
-    // RESET INPUTS
-    document.getElementById("strInput").value = "";
-    document.getElementById("aeInput").value = "";
+    // reset other inputs (BUT STR now already updated)
+    aeInput.value = "";
     document.getElementById("targetFile").value = "";
   };
 
-  // File read
   reader.readAsArrayBuffer(targetFile);
 }
 // ========================================
@@ -185,7 +131,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
 
-    document.getElementById("strInput").value = nameWithoutExt;
+    const lastNumber = Number(nameWithoutExt.split("-")[1]);
+    const incremented = Number(lastNumber) + 1;
+
+    // 🔥 IMPORTANT: input field update
+    const strInput = document.getElementById("strInput");
+    strInput.value = `${"STR-" + incremented}`;
 
     document.getElementById("aeInput").value = "xmorshed";
   });
@@ -196,317 +147,261 @@ window.addEventListener("DOMContentLoaded", () => {
 // ========================================
 
 async function processCalculation() {
-
-  // ==============================
+  // =====================================
   // FILE INPUTS
-  // ==============================
+  // =====================================
 
-  const sourceFile =
-    document.getElementById(
-      "calcSource"
-    ).files[0];
+  const file1 = document.getElementById("calcSource").files[0];
 
-  const targetFile =
-    document.getElementById(
-      "calcTarget"
-    ).files[0];
+  const file2 = document.getElementById("calcTarget").files[0];
 
-
+  const file3 = document.getElementById("finalFile").files[0];
 
   // validation
-  if (!sourceFile || !targetFile) {
-
-    alert("Please select both files");
+  if (!file1 || !file2 || !file3) {
+    alert("Please select all 3 files");
 
     return;
   }
 
+  // =====================================
+  // READ FILES
+  // =====================================
 
+  const data1 = await file1.arrayBuffer();
 
-  // ==============================
-  // READ SOURCE FILE
-  // ==============================
+  const data2 = await file2.arrayBuffer();
 
-  const sourceData =
-    await sourceFile.arrayBuffer();
+  const data3 = await file3.arrayBuffer();
 
-  const sourceWorkbook =
-    XLSX.read(sourceData, {
-      type: "array",
-    });
+  const wb1 = XLSX.read(data1, {
+    type: "array",
+  });
 
-  const sourceSheet =
-    sourceWorkbook.Sheets[
-      sourceWorkbook.SheetNames[0]
-    ];
+  const wb2 = XLSX.read(data2, {
+    type: "array",
+  });
 
+  const wb3 = XLSX.read(data3, {
+    type: "array",
+  });
 
+  // =====================================
+  // SHEETS
+  // =====================================
 
-  // ==============================
-  // READ TARGET FILE
-  // ==============================
+  const sheet1 = wb1.Sheets[wb1.SheetNames[0]];
 
-  const targetData =
-    await targetFile.arrayBuffer();
+  const sheet2 = wb2.Sheets[wb2.SheetNames[0]];
 
-  const targetWorkbook =
-    XLSX.read(targetData, {
-      type: "array",
-    });
+  const sheet3 = wb3.Sheets[wb3.SheetNames[0]];
 
-  const targetSheet =
-    targetWorkbook.Sheets[
-      targetWorkbook.SheetNames[0]
-    ];
+  // =====================================
+  // JSON
+  // =====================================
 
+  const json1 = XLSX.utils.sheet_to_json(sheet1, { header: 1 });
 
+  const json2 = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
 
-  // ==============================
-  // SHEET → JSON
-  // ==============================
+  let json3 = XLSX.utils.sheet_to_json(sheet3, { header: 1 });
 
-  const sourceJson =
-    XLSX.utils.sheet_to_json(
-      sourceSheet,
-      { header: 1 }
-    );
+  // =====================================
+  // COPY DATA
+  // =====================================
 
-  const targetJson =
-    XLSX.utils.sheet_to_json(
-      targetSheet,
-      { header: 1 }
-    );
-
-
-
-  // ==============================
-  // PRODUCT ROWS COPY
-  // ==============================
-
+  const ingredientsRows = [];
+  const byProductRows = [];
   const productRows = [];
 
+  // =====================================
+  // FILE 1
+  // INGREADIENTS + BY PRODUCT
+  // =====================================
 
-
-  for (let row of sourceJson) {
-
-    // D column = index 3
+  for (let row of json1) {
     const dCell = row[3];
 
-
-
-    if (
-      typeof dCell === "string" &&
-      dCell.includes("PRODUCT")
-    ) {
-
-      // পুরো row copy
-      productRows.push(row);
+    if (typeof dCell === "string") {
+      if (dCell.includes("INGREADIENTS")) {
+        ingredientsRows.push([...row]);
+      } else if (dCell.includes("BY PRODUCT")) {
+        byProductRows.push([...row]);
+      }
     }
   }
 
+  // =====================================
+  // FILE 2
+  // PRODUCT
+  // =====================================
 
-
-  // ==============================
-  // FIND INGREADIENTS ROW
-  // ==============================
-
-  let insertIndex = -1;
-
-
-
-  for (let i = 0; i < targetJson.length; i++) {
-
-    const row = targetJson[i];
-
+  for (let row of json2) {
     const dCell = row[3];
 
-
-
-    if (
-      typeof dCell === "string" &&
-      dCell.includes("INGREADIENTS")
-    ) {
-
-      insertIndex = i;
-
-      break;
+    if (typeof dCell === "string" && dCell.includes("PRODUCT")) {
+      productRows.push([...row]);
     }
   }
 
+  // =====================================
+  // MERGE ALL ROWS
+  // =====================================
 
+  const finalRows = [...ingredientsRows, ...byProductRows, ...productRows];
 
-  // যদি INGREADIENTS না পায়
-  if (insertIndex === -1) {
+  // =====================================
+  // REMOVE EMPTY ROWS
+  // =====================================
 
-    alert("INGREADIENTS row not found");
+  json3 = json3.filter((row) => {
+    return row.some((cell) => {
+      return cell !== undefined && cell !== "";
+    });
+  });
 
-    return;
+  // =====================================
+  // INSERT FROM ROW 2
+  // =====================================
+
+  // header row রেখে
+  const headerRow = json3[0];
+
+  // data
+  const remainingRows = json3.slice(1);
+
+  // new final data
+  json3 = [headerRow, ...finalRows, ...remainingRows];
+
+  // =====================================
+  // E COLUMN SERIAL
+  // =====================================
+
+  let serial = 1;
+
+  // Row 2 থেকে loop
+  for (let i = 1; i < json3.length; i++) {
+    // D column
+    const dCell = json3[i][3];
+
+    // যদি INGREADIENTS হয়
+    if (typeof dCell === "string" && dCell.includes("INGREADIENTS")) {
+      // E column = index 4
+      json3[i][4] = serial;
+
+      // next serial
+      serial++;
+    }
   }
 
+  // =====================================
+  // H COLUMN FIXED DECIMAL
+  // =====================================
 
+  for (let i = 0; i < json3.length; i++) {
+    const hCell = json3[i][7];
 
-  // ==============================
-  // INSERT PRODUCT ROWS
-  // ==============================
+    if (hCell !== undefined && !isNaN(hCell)) {
+      json3[i][7] = Number(hCell).toFixed(5);
+    }
+  }
 
-  targetJson.splice(
-    insertIndex,
-    0,
-    ...productRows
-  );
+  // =====================================
+  // CREATE NEW SHEET
+  // =====================================
 
+  const newSheet = XLSX.utils.aoa_to_sheet(json3);
 
+  wb3.Sheets[wb3.SheetNames[0]] = newSheet;
 
-  // ==============================
-  // NEW SHEET
-  // ==============================
-
-  const newSheet =
-    XLSX.utils.aoa_to_sheet(
-      targetJson
-    );
-
-  targetWorkbook.Sheets[
-    targetWorkbook.SheetNames[0]
-  ] = newSheet;
-
-
-
-  // ==============================
+  // =====================================
   // FILE NAME FROM B COLUMN
-  // ==============================
+  // =====================================
 
-  let fileName = "output.csv";
+  let outputName = "output.csv";
 
-
-
-  for (let row of targetJson) {
-
-    // B column = index 1
+  for (let row of json3) {
     const bCell = row[1];
 
-
-
-    if (
-      typeof bCell === "string" &&
-      bCell.startsWith("STR-")
-    ) {
-
-      fileName = `${bCell}.csv`;
+    if (typeof bCell === "string" && bCell.startsWith("STR-")) {
+      outputName = `${bCell}.csv`;
 
       break;
     }
   }
 
-
-
-  // ==============================
+  // =====================================
   // SAVE DIALOG
-  // ==============================
+  // =====================================
 
-  const { dialog } =
-    require("@electron/remote");
+  const { dialog } = require("@electron/remote");
 
+  const savePath = await dialog.showSaveDialog({
+    defaultPath: outputName,
 
+    filters: [
+      {
+        name: "CSV File",
+        extensions: ["csv"],
+      },
+    ],
+  });
 
-  const savePath =
-    await dialog.showSaveDialog({
-
-      defaultPath: fileName,
-
-      filters: [
-        {
-          name: "CSV File",
-          extensions: ["csv"],
-        },
-      ],
-    });
-
-
-
-  // cancel check
+  // cancel
   if (savePath.canceled) {
-
-    document.getElementById(
-      "status1"
-    ).innerText =
-      "❌ Save cancelled";
+    document.getElementById("status1").innerText = "❌ Save cancelled";
 
     return;
   }
 
-
-
-  // ==============================
+  // =====================================
   // SAVE FILE
-  // ==============================
+  // =====================================
 
-  XLSX.writeFile(
-    targetWorkbook,
-    savePath.filePath,
-    {
-      bookType: "csv",
-    }
-  );
+  XLSX.writeFile(wb3, savePath.filePath, {
+    bookType: "csv",
+  });
 
+  // =====================================
+  // SUCCESS
+  // =====================================
 
+  document.getElementById("status1").innerText = "Calculation Complete!";
 
-  // ==============================
-  // SUCCESS MESSAGE
-  // ==============================
+  // =====================================
+  // RESET INPUTS
+  // =====================================
 
-  document.getElementById(
-    "status1"
-  ).innerText =
-    "✅ Calculation Complete!";
+  document.getElementById("calcSource").value = "";
+
+  document.getElementById("calcTarget").value = "";
+
+  document.getElementById("finalFile").value = "";
 }
-
-
 
 // ========================================
 // PIN SYSTEM
 // ========================================
 
 function checkPin() {
-
   // input pin নিচ্ছে
-  const pin =
-    document.getElementById(
-      "pinInput"
-    ).value;
-
+  const pin = document.getElementById("pinInput").value;
 
   // correct pin
   const correctPin = "0000";
 
-
   // check করছে
   if (pin === correctPin) {
-
     // PIN screen hide
-    document.getElementById(
-      "pinScreen"
-    ).style.display = "none";
-
+    document.getElementById("pinScreen").style.display = "none";
 
     // Main app show
-    document.getElementById(
-      "mainApp"
-    ).style.display = "block";
-  }
-
-  else {
-
+    document.getElementById("mainApp").style.display = "block";
+  } else {
     // Error message
-    document.getElementById(
-      "pinError"
-    ).innerText =
-      "Wrong PIN";
-
+    document.getElementById("pinError").innerText = "Wrong PIN";
 
     // INPUT CLEAR
-    document.getElementById(
-      "pinInput"
-    ).value = "";
+    document.getElementById("pinInput").value = "";
   }
 }
